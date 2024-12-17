@@ -1,0 +1,60 @@
+services:
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - USER_SERVICE_URL=http://user_service:8001
+      - AUTH_SERVICE_URL=http://auth_service:8002
+      - PRODUCT_SERVICE_URL=http://product_service:8003
+    depends_on:
+      - user_service
+      - auth_service
+      - product_service
+
+  user_service:
+    build:
+      context: ./services/user_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - ARANGO_URL=http://arangodb:8529
+    depends_on:
+      - arangodb
+
+  auth_service:
+    build:
+      context: ./services/auth_service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - ARANGO_URL=http://arangodb:8529
+    depends_on:
+      - arangodb
+
+  product_service:
+    build:
+      context: ./services/product_service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - ARANGO_URL=http://arangodb:8529
+    depends_on:
+      - arangodb
+
+  arangodb:
+    image: arangodb:latest
+    environment:
+      - ARANGO_ROOT_PASSWORD=rootpassword
+    ports:
+      - "8529:8529"
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+
+volumes:
+  arangodb_data:
